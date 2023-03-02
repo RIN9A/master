@@ -15,10 +15,22 @@ public class Client {
 ){
             Scanner scanner = new Scanner(System.in);
             System.out.println("Who are You?");
-            String msg = scanner.nextLine();
-            output.writeUTF(msg);
+            String name = scanner.nextLine();
+            output.writeUTF(name);
             String recMsg = input.readUTF();
             System.out.println(recMsg);
+            String msg;
+            while (scanner.hasNext()){
+                msg = scanner.nextLine();
+                output.writeUTF(msg);
+                if(msg.equals("bye") || (msg.equals("exit") && name.equals("admin"))){
+                    break;
+                }
+                recMsg = input.readUTF();
+                System.out.println(recMsg);
+            }
+
+
         }catch (IOException e){
             e.printStackTrace();
         }

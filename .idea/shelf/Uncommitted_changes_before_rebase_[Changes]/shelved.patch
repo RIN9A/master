@@ -1,0 +1,99 @@
+Index: src/ServerClass.java
+===================================================================
+diff --git a/src/ServerClass.java b/src/ServerClass.java
+--- a/src/ServerClass.java	
++++ b/src/ServerClass.java	
+@@ -6,36 +6,61 @@
+ 
+ public class ServerClass {
+     private static final int PORT = 34522;
++
+     public static void main(String[] args)  {
+         try(ServerSocket server = new ServerSocket(PORT)){
+             System.out.println("Сервер запущен и готов к работе..." + "\n");
+-            while(true){
+-                Session session = new Session(server.accept());
+-
++            while (true){
++                Session session = new Session(server);
+                 session.start();
+             }
++
+         }catch (IOException e){
+             e.printStackTrace();
+         }
+     }
++
++
+ }
+ class Session extends Thread{
+     private final Socket socket;
+ 
+-    Session(Socket socket) {
+-        this.socket = socket;
++
++    Session(ServerSocket serverSocket) throws IOException {
++        this.socket = serverSocket.accept();
+     }
+ 
+     public void run(){
+         try(
++
+                 DataInputStream input = new DataInputStream(socket.getInputStream());
+                 DataOutputStream output = new DataOutputStream(socket.getOutputStream())
+         ) {
+             String msg = input.readUTF();
+             System.out.println("К нам пришел " + msg + "\n");
+             output.writeUTF("Hello, " + msg);
++            String msgAfterGreet = input.readUTF();
++            int countMsg = 0;
+ 
++            while (!msgAfterGreet.equals("bye")){
++                if(msg.equals("admin") && msgAfterGreet.equals("exit")){
++                    break;
++                }
++                countMsg ++;
++                System.out.println("Получено сообщение №"+ countMsg + " - " + msgAfterGreet + "\n");
++                output.writeUTF("Ответ сервера: " + countMsg + " - " + msgAfterGreet);
++                msgAfterGreet = input.readUTF();
++            }
++            System.out.println("Пока, " + msg + "\n");
++
++            if(msg.equals("admin")){
++                socket.close();
++                //input.close();
++                //output.close();
++                this.interrupt();
++            }
+             socket.close();
++
+         }catch (IOException e){
+             e.printStackTrace();
+         }
+Index: src/Client.java
+===================================================================
+diff --git a/src/Client.java b/src/Client.java
+--- a/src/Client.java	
++++ b/src/Client.java	
+@@ -19,9 +19,20 @@
+                 String msg = scanner.nextLine();
+                 output.writeUTF(msg);
+                 String receivedMsg = input.readUTF();
+-
+                 System.out.println(receivedMsg + "\n");
+ 
++                String msgAfterGreeting = scanner.nextLine();
++                output.writeUTF(msgAfterGreeting);
++
++                while (!msgAfterGreeting.equals("bye") && !msgAfterGreeting.equals("exit")){
++                    receivedMsg = input.readUTF();
++                    System.out.println(receivedMsg + "\n");
++                    msgAfterGreeting = scanner.nextLine();
++                    output.writeUTF(msgAfterGreeting);
++
++                }
++
++
+         }catch (IOException e){
+             e.printStackTrace();
+         }

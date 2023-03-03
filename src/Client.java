@@ -23,7 +23,7 @@ public class Client {
             while (scanner.hasNext()){
                 msg = scanner.nextLine();
                 output.writeUTF(msg);
-                if(msg.equals("bye") || (msg.equals("exit") && name.equals("admin"))){
+                if(msg.equals("bye")){
                     break;
                 }
                 recMsg = input.readUTF();
